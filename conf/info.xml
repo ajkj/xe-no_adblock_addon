@@ -5,7 +5,7 @@
         광고차단 기능을 이용하는 사용자에게 경고하고 광고차단 기능을 종료할것을 안내하는 애드온입니다.
         관리자에게는 항상 애드온이 작동하지 않습니다.
     </description>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <date>2015-06-17</date>
 
     <author email_address="thename@requery.me" link="mailto:thename@requery.me">
