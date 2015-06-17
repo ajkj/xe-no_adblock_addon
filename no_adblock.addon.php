@@ -73,9 +73,11 @@ jQuery.ajax({
     'method' : 'GET',
     'url' : '$fake_url',
     'success' : function(data){
-        jQuery('body').append(data);
+        jQuery(document).ready(function(){
+            jQuery('body').append(data);
+        });
     }
-})
+});
 </script>
 EOT;
 
