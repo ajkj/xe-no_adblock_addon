@@ -2,58 +2,16 @@
 
 class no_adblock_class
 {
-    private $act;
     private $addon_info;
 
-    function __construct($act,$addon_info)
+    function __construct($addon_info)
     {
-        $this->act = $act;
         $this->addon_info = $addon_info;
     }
 
 
-
-    public function proc()
+    public function getTester()
     {
-
-        // 우선적으로 CSRF체크
-        if(checkCSRF() == false)
-        {
-            Context::close();
-            exit('CSRF');
-        }
-
-
-        //act에 따라서 함수 CAll 또는 종료.
-        if($this->act === 'procNo_adblock_addon_getTester')
-        {
-            $this->getTester();
-        }
-        elseif($this->act === 'procNo_adblock_addon_not_blocked')
-        {
-            if($_SESSION['no_adblock_addon']['token'] === Context::get('token'))
-            {
-                unset($_SESSION['no_adblock_addon']['token']);
-                $_SESSION['no_adblock_addon']['status'] = true;
-                Context::close();
-                exit('OK');
-            }
-            else
-            {
-                Context::close();
-                exit('incorrect');
-            }
-
-        }
-
-    }
-
-
-    private function getTester()
-    {
-
-        // 세션을 끝내기 전에 token을 가져옵니다.
-        $token = $this->getToken();
         Context::close();
 
         // google analytics를 통한 로깅 여부
@@ -100,12 +58,13 @@ STRING;
         }
 
 
+
         /**
          * https://github.com/sitexw/FuckAdBlock
          * window 객체에 instance를 두지 않도록 수정함.
          * v3.3.1 https://github.com/sitexw/FuckAdBlock/commit/1a29bed9f29da3811f6f5518b1bd6d9d827160a9 commit
          */
-        $fuck_ad_blcok = <<<STRING
+        $fuck_ad_block = <<<STRING
 (function(){
 
 var i = {};
@@ -123,48 +82,79 @@ i.fuckAdBlock.onDetected(function(){
     $block_detect_script
 });
 i.fuckAdBlock.onNotDetected(function(){
-    jQuery.ajax({
-        'method' : 'POST',
-        'url' : request_uri,
-        'data' : {
-            'act' : 'procNo_adblock_addon_not_blocked',
-            'token' : '$token'
-        }
-    });
+
 });
 i.fuckAdBlock.check();
-
 })();
 
 STRING;
 
-        // 스크립트 출력
-        echo '<script>'.$fuck_ad_blcok.'</script>';
+
+        header('Pragma: ', true);
+        header('etag :'.md5($fuck_ad_block), true);
+        header('Cache-control: private, max-age=3600', true);
+        header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
+
+        // etag가 동일하면 출력하지 않음
+        if($_SERVER['HTTP_IF_NONE_MATCH'] === md5($fuck_ad_block))
+        {
+            header("HTTP/1.1 304 Not Modified", true);
+        }
+        else
+        {
+            echo '<script>'.$fuck_ad_block.'</script>';
+        }
+
         exit();
 
     }
 
-
-
-
-    private function getToken()
+    public function getFakeUrl()
     {
 
-        if(isset($_SESSION['no_adblock_addon']['token']) === false )
+        //adblock에서 regex로 url 필터링을 하지 못하게 막는것이 목적이므로 rand, mt_rand를 이용합니다.
+
+        // 랜덤한 document_srl을 생성합니다.
+        $fake_document_srl = (string)mt_rand(1000,PHP_INT_MAX);
+
+
+        // 영문 소문자 로 시작하는 랜럼한 fake mid를 생성합니다.
+        $fake_mid='';
+        $fake_mid .= chr(rand(97,122)); // a-z
+
+        $length = rand(10,20);
+        $list = 'abcedfghijklmnopqrstuvwxyz0123456789_';
+
+        for($i=0; $i<$length;$i++)
         {
-            if(class_exists('Password'))
-            {
-                $password = new Password();
-                $token = $password->createSecureSalt(16,'hex');
-            }
-            else
-            {
-                $token = session_id().microtime();
-                for($i=0; $i<10; $i++ ){  $token =  md5(rand().mt_rand().$token.$i);   }
-            }
-            $_SESSION['no_adblock_addon']['token'] = $token;
+            $fake_mid .= $list[rand(0,36)];
         }
-        return $_SESSION['no_adblock_addon']['token'];
+        $fake_mid .= $list[rand(0,35)]; //a-z 0-9
+
+        // 6-15 자리의 fake search_keyword 를 생성합니다.
+        $length = rand(6,15);
+        $list = 'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ';
+        $fake_search_keyword = '';
+        for($i=0; $i<$length;$i++)
+        {
+            $fake_search_keyword .= $list[rand(0,51)];
+        }
+
+
+
+
+        $url = getNotEncodedFullUrl('mid',$fake_mid,
+                                    'search_target','title_content',
+                                    'search_keyword',$fake_search_keyword,
+                                    'document_srl',$fake_document_srl);
+
+        return  array(
+            'url' => $url,
+            'mid' => $fake_mid,
+            'document_srl'=>$fake_document_srl,
+            'search_keyword' => $fake_search_keyword
+        );
+
     }
 
 

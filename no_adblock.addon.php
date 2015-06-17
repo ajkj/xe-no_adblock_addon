@@ -3,8 +3,6 @@
 if(!defined('__XE__'))	exit();
 
 
-
-
 // 애드온 설정이 되어 있지 않으면 기본 설정을 적용합니다.
 if(empty($addon_info->log) === true){
     $addon_info->log = 'N';
@@ -33,17 +31,17 @@ if(empty($addon_info->block_detect_action_var) === true)
 }
 
 
-
-
-
-// 다음과 같은 act일 경우에는 act로 넘겨줍니다.
-if($called_position === 'before_module_init'
-    && in_array(Context::get('act'), array('procNo_adblock_addon_getTester', 'procNo_adblock_addon_not_blocked')))
+if ( $called_position === 'before_module_init'
+    && ( isset($_SESSION['no_adblock_addon']['fake_url'])
+            && Context::get('mid') ===  $_SESSION['no_adblock_addon']['fake_url']['mid']
+            && Context::get('document_srl') ===  $_SESSION['no_adblock_addon']['fake_url']['document_srl']
+            && Context::get('search_keyword') ===  $_SESSION['no_adblock_addon']['fake_url']['search_keyword']))
 {
-
     require_once(_XE_PATH_.'addons/no_adblock/no_adblock.class.php');
-    $no_adblock_class = new no_adblock_class(Context::get('act'), $addon_info);
-    $no_adblock_class->proc();
+
+    $no_adblock_class = new no_adblock_class($addon_info);
+
+    $no_adblock_class->getTester();
 
 }
 elseif ($called_position === 'before_display_content')
@@ -59,23 +57,21 @@ elseif ($called_position === 'before_display_content')
         return;
     }
 
-    // 이미 체크 된 경우 return 하지만, 10% 확률로 다시 체크합니다.(애드블럭 일시 중지후 다시 켜는것 방지)
-    if($_SESSION['no_adblock_addon']['status'] === true)
+    if(isset($_SESSION['no_adblock_addon']['fake_url']) === false)
     {
-        $_SESSION['no_adblock_addon']['status'] = (mt_rand(0, 4) !== 0) ? true : false;
-        return;
+        require_once(_XE_PATH_.'addons/no_adblock/no_adblock.class.php');
+        $no_adblock_class = new no_adblock_class(Context::get('act'), $addon_info);
+        $_SESSION['no_adblock_addon']['fake_url'] = $no_adblock_class->getFakeUrl();
     }
-    $request_uri_x = Context::getRequestUri();
+
+    $fake_url = $_SESSION['no_adblock_addon']['fake_url']['url'];
 
     // adblock script를 가져옵니다.
     $get_script = <<<EOT
 <script>
 jQuery.ajax({
-    'method' : 'POST',
-    'url' : '$request_uri_x',
-    'data' : {
-        'act' : 'procNo_adblock_addon_getTester'
-    },
+    'method' : 'GET',
+    'url' : '$fake_url',
     'success' : function(data){
         jQuery('body').append(data);
     }
@@ -84,6 +80,5 @@ jQuery.ajax({
 EOT;
 
     Context::addHtmlHeader($get_script);
-
 
 }

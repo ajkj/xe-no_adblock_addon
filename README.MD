@@ -11,7 +11,8 @@ adblock 사용을 제한하는 애드온 입니다.
 ### 기능
 - Google Analytics와 연계하여 Adblock을 사용할 경우 event를 전송하여, adblock 사용자에 대한 통계를 낼 수 있습니다.
 - adblock을 사용하는 유저에게 애드온에 내장된 modal 창을 이용하여 경고 메시지 보여주거나, 원하는 javascript를 실행 할 수 있습니다.
-- AJAX post를 통해서 script를 가져옴으로서 adblock에 의해 차단당하지 않습니다.
+- 세션별로(접속자별로) XE와 유사한 형태의 random url https://example.com/?mid=random&document_srl=random& ... 형태를 이용하기에 adblock에서 차단 할 수 없습니다.
+- 각 random url은 클라이언트 상에서 캐시를 하도록 했기에 v1.0.0에 비해 서버 부담이 적습니다.
 
 
 #### 요구사항
