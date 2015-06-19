@@ -33,22 +33,63 @@ class no_adblock_class
             $message= $this->addon_info->block_detect_action_var;
 
             $block_detect_script = <<<STRING
-            var d = document.createElement('div');
-            var a = String.fromCharCode(parseInt((Math.random()*1000+97)%26 + 97))+Math.random().toString().substring(2)
-            var c = '<style> .'+a+' { position:fixed !important; } </style> ';
+            var go = function(){
+                var d = document.createElement('div');
+                var a = String.fromCharCode(parseInt((Math.random()*1000+97)%26 + 97))+Math.random().toString().substring(2)
+                var c = '<style> .'+a+' { position:fixed !important; } </style> ';
 
-            jQuery('body').append(c).append(d)
-            jQuery(d).html('$message')
-            .dialog({
-            'modal': true,
-            'title' : '광고차단 이용 안내',
-                buttons: {
-                    '재접속' : function() {
-                     document.location.reload();
+                jQuery('body').append(c).append(d)
+                jQuery(d).html('$message')
+                .dialog({
+                'modal': true,
+                'title' : '광고차단 이용 안내',
+                    buttons: {
+                        '재접속' : function() {
+                         document.location.reload();
+                        }
+                      },
+                'dialogClass': a
+                });
+            }
+
+            if(typeof jQuery.ui !== 'undefined')
+            {
+                go();
+                return;
+            }
+
+
+            var c = document.createElement('link');
+            var c_state = false;
+            c.rel = 'stylesheet';
+            c.href = 'https://cdn.jsdelivr.net/jquery.ui/1.11.3/jquery-ui.min.css';
+            c.onload = function(){
+                c_state = true;
+            }
+            document.head.appendChild(c);
+
+
+
+            var j = document.createElement('script');
+            j.async = true;
+            j.src = 'https://cdn.jsdelivr.net/jquery.ui/1.11.3/jquery-ui.min.js';
+
+            j.onload = function(){
+                var check = function(){
+                    if(c_state === true)
+                    {
+                        go();
                     }
-                  },
-            'dialogClass': c
-            });
+                    else
+                    {
+                        window.setTimeout(check, 20);
+                    }
+                }
+
+                check();
+            }
+            document.body.appendChild(j);
+
 
 STRING;
         }
