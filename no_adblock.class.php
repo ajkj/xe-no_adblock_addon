@@ -12,7 +12,7 @@ class no_adblock_class
 
     public function getTester()
     {
-        Context::close();
+
 
         // google analytics를 통한 로깅 여부
         $log_script = '';
@@ -125,16 +125,18 @@ i.fuckAdBlock.onDetected(function(){
 i.fuckAdBlock.onNotDetected(function(){
 
 });
-i.fuckAdBlock.check();
+
 })();
 
 STRING;
+        context::close();
 
 
         header('Pragma: ', true);
         header('etag :'.md5($fuck_ad_block), true);
-        header('Cache-control: private, max-age=3600', true);
-        header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
+        header('Cache-control: private, max-age=7200', true);
+        header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 7200), true);
+        header('Content-type: application/javascript; charset=UTF-8');
 
         // etag가 동일하면 출력하지 않음
         if($_SERVER['HTTP_IF_NONE_MATCH'] === md5($fuck_ad_block))
@@ -143,9 +145,8 @@ STRING;
         }
         else
         {
-            echo '<script>'.$fuck_ad_block.'</script>';
+            echo $fuck_ad_block;
         }
-
         exit();
 
     }

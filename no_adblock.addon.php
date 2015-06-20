@@ -57,27 +57,13 @@ elseif ($called_position === 'before_display_content')
         require_once(_XE_PATH_.'addons/no_adblock/no_adblock.class.php');
 
         $no_adblock_class = new no_adblock_class($addon_info);
-
         $_SESSION['no_adblock_addon']['fake_url'] = $no_adblock_class->getFakeUrl();
     }
 
     $fake_url = $_SESSION['no_adblock_addon']['fake_url']['url'];
 
     // adblock script를 가져옵니다.
-    $get_script = <<<EOT
-<script>
-jQuery.ajax({
-    'method' : 'GET',
-    'url' : '$fake_url',
-    'success' : function(d){
-        jQuery(document).ready(function(){
-            jQuery('body').append(d);
-        });
-    }
-});
-</script>
-EOT;
-
-    Context::addHtmlHeader($get_script);
+    $get_script = '<script src="'.$fake_url.'"></script>';
+    Context::addHtmlFooter($get_script);
 
 }
