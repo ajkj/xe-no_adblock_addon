@@ -1,7 +1,11 @@
 # no adblock
-adblock 사용을 제한하는 애드온 입니다.
+adblock 사용을 통계내고 필요에 따라 사용을 제한 할 수 있는 애드온 입니다.
 
-광고 수익으로 운영되는 웹사이트에서 임의로 광고를 차단하는것은, 웹사이트의 서버 자원을 무상으로 사용하겠다는 의사를 표현한 것이라 생각합니다.
+해외 일부 국가에서는 전체 인터넷 사용자의 20% 이상이 adblock등의 광고 차단 프로그램을 이용하고 있으며, 그 증가 속도 또한 매우 급격하게 증가하고 있다고 합니다.
+ - 2013-2014년 사이에 60% 증가
+ - 일부 유럽국가에서 전체의 15~26% 사용자가 광고차단 기능을 이용중
+ - http://blog.pagefair.com/2014/adblocking-report
+ - http://www.slideshare.net/pagefair/adblocking-goes-mainstream
 
 본 애드온은 adblock을 사용하는지를 체크하여, adblock 사용 통계 및 adblock 사용시 관련된 안내 메시지를 내보낼 수 있도록 도와줍니다.
 
